@@ -1,5 +1,3 @@
-import abc
-
 from game.ai.aiplayer import Ai
 from game.player import Player
 from game.tictactoecore import TicTacToe, SquareState, TurnState
