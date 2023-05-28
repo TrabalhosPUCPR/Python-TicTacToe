@@ -15,7 +15,7 @@ TITLE = """
 
 """
 AUTHOR = "Gabrielle, Kovalski and KnightLeo"
-REPO_LINK = "https://github.com/TrabalhosPUCPR/Rust-TicTacToe"
+REPO_LINK = "https://github.com/TrabalhosPUCPR/PythonTicTacToe"
 AI_MOVE_DELAY = 1000  # in ms
 
 
