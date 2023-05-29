@@ -119,7 +119,7 @@ class TicTacToe:
         seq_count = 1
         for i in [1, -1]:
             dist = i
-            while 0 <= x + dist < self.x_size and dist < self.seq_to_win:
+            while 0 <= x + dist < self.x_size and dist * i  < self.seq_to_win:
                 square_state = self.get_square(x + dist, y)
                 if not square_state.is_none():
                     if square_state == state:
@@ -142,7 +142,7 @@ class TicTacToe:
         seq_count = 1
         for i in [1, -1]:
             dist = i
-            while 0 <= y + dist < self.y_size and dist < self.seq_to_win:
+            while 0 <= y + dist < self.y_size and dist * i  < self.seq_to_win:
                 square_state = self.get_square(x, y + dist)
                 if not square_state.is_none():
                     if square_state == state:
@@ -160,13 +160,51 @@ class TicTacToe:
         else:
             return 1
 
-    def check_left_diag(self, x: int, y: int, state: SquareState, stop_counting: bool,
-                        return_available_spaces: bool) -> int:
-        return 1
+    def check_left_diag(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
+        available_spaces_count = 1
+        seq_count = 1
+        for i in [1, -1]:
+            dist = i
+            while 0 <= y + dist < self.y_size and 0 <= x + dist < self.x_size and dist * i < self.seq_to_win:
+                square_state = self.get_square(x + dist, y + dist)
+                if not square_state.is_none():
+                    if square_state == state:
+                        seq_count += 1
+                    else:
+                        break
+                elif stop_counting:
+                    break
+                dist += i
+                available_spaces_count += 1
+        if return_available_spaces:
+            return available_spaces_count
+        elif not stop_counting or seq_count >= self.seq_to_win:
+            return seq_count
+        else:
+            return 1
 
-    def check_right_diag(self, x: int, y: int, state: SquareState, stop_counting: bool,
-                         return_available_spaces: bool) -> int:
-        return 1
+    def check_right_diag(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
+        available_spaces_count = 1
+        seq_count = 1
+        for i in [1, -1]:
+            dist = i
+            while 0 <= y + (dist*-1) < self.y_size and 0 <= x + dist < self.x_size and dist * i < self.seq_to_win:
+                square_state = self.get_square(x + dist, y + dist*-1)
+                if not square_state.is_none():
+                    if square_state == state:
+                        seq_count += 1
+                    else:
+                        break
+                elif stop_counting:
+                    break
+                dist += i
+                available_spaces_count += 1
+        if return_available_spaces:
+            return available_spaces_count
+        elif not stop_counting or seq_count >= self.seq_to_win:
+            return seq_count
+        else:
+            return 1
 
     def check_draw(self):
         return self.filled == len(self.squares)
