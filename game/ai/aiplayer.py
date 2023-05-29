@@ -45,7 +45,7 @@ class Ai(Player):
     def get_possible_moves(self, current_board: TicTacToe, maximizing):
         moves = []
         for index, square in enumerate(current_board.squares):
-            if square.symbol is None:
+            if square.is_none():
                 if maximizing:
                     square_state = SquareState(self.square_symbol)
                 else:

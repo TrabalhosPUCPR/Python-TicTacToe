@@ -122,7 +122,7 @@ class TicTacToeGame:
             turn_logger.restart_timer()
             x, y = self.game_state.next_player[0].act(self.board)
             turn_logger.end_timer()
-            board_state = self.board.set_square(x, y)
+            board_state = self.board.set_square(x, y, SquareState(symbol=self.game_state.next_player[0].square_symbol))
             turn_logger.total_turns += 1
             turn_logger.latest_placed_coord = (x, y)
             turn_logger.player_n_turn = self.game_state.next_player[1]
@@ -143,7 +143,7 @@ class TicTacToeGame:
                 else:
                     self.game_state.next_player = (self.player1, 1)
             print(self)
-        print("\nGame is finished!")
+        print("\nGame is finished!\n")
 
     @staticmethod
     def create_ai(player, op_symbol, difficulty):
