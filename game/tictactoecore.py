@@ -109,7 +109,6 @@ class TicTacToe:
                  (self.check_left_diag(x, y, state, True, False) == self.seq_to_win) or
                  (self.check_right_diag(x, y, state, True, False) == self.seq_to_win)):
             return TurnState.Victory
-
         if self.check_draw():
             return TurnState.Draw
         return TurnState.Continue
@@ -252,28 +251,26 @@ class TicTacToe:
         return axis
 
     def spaces_of_around(self, index: int, square_state: SquareState) -> int:
-        coord = self.get_index_coord(index)
         count = 0
-        if coord[0] > 0:
-            n = coord[0] - 1
-            square = self.get_square(n, coord[1])
-            if square is not None and square_state == square:
+        x, y = self.get_index_coord(index)
+        if x - 1 >= 0:
+            if square_state == self.get_square(x-1, x):
                 count += 1
-        square = self.get_square(coord[0] + 1, coord[1])
-        if square is not None and square_state == square:
-            count += 1
-        x = 0
-        n = 2
-        if coord[0] != 0:
-            x = coord[0] - 1
-            n = 3
-        top_y = coord[1] - 1
-        for i in range(n):
-            if top_y is not None:
-                square = self.get_square(x + i, top_y)
-                if square is not None and square_state == square:
-                    count += 1
-            square = self.get_square(x + i, coord[1] + 1)
-            if square is not None and square_state == square:
+        if x + 1 < self.x_size:
+            if square_state == self.get_square(x+1, y):
                 count += 1
+        if x != 0:
+            check_x = x - 1
+            spaces_to_check = 3
+        else:
+            check_x = 0
+            spaces_to_check = 2
+        for i in range(spaces_to_check):
+            if check_x + i < self.x_size:
+                if y - 1 >= 0:
+                    if square_state == self.get_square(check_x+i, y - 1):
+                        count += 1
+                if y + 1 < self.y_size:
+                    if square_state == self.get_square(check_x+i, y + 1):
+                        count += 1
         return count

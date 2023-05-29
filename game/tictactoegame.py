@@ -93,7 +93,7 @@ class TicTacToeGame:
                             print("\nDebug Mode Activated!")
                             game.show_turn_info = True
                     else:
-                        break
+                        return game
             else:
                 break
         return game
@@ -157,11 +157,11 @@ class TicTacToeGame:
             max_layers = 5
         return Ai(player, max_childs, max_layers, op_symbol)
 
-    def change_size(self, size, seq_to_win) -> bool:
+    def change_size(self, size, seq_to_win):
         if size < seq_to_win:
             return False
         self.board.x_size = size
         self.board.y_size = size
         self.board.seq_to_win = seq_to_win
-        self.board.squares = [SquareState() for _ in range(size)]
-        return True
+        self.board.squares = [SquareState() for _ in range(size**2)]
+        return self

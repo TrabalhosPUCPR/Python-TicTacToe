@@ -1,4 +1,4 @@
-import random
+import copy
 
 from game.ai.node import Node
 from game.player import Player
@@ -19,7 +19,7 @@ class Ai(Player):
         return current_board.get_index_coord(index)
 
     def compute_moves(self, current_node, alpha, beta, layer, maximizing):
-        if layer == 0 and current_node.data[2] != TurnState.Continue:
+        if layer == 0 or current_node.data[2] != TurnState.Continue:
             return current_node.data_score, current_node.data[1]
         if maximizing:
             best_move = (float('-inf'), 0)
@@ -50,7 +50,8 @@ class Ai(Player):
                     square_state = SquareState(self.square_symbol)
                 else:
                     square_state = SquareState(self.op_symbol)
-                possible_move_node = Node((current_board, index, current_board.set_square_from_index(index, square_state)))
+                board_copy = copy.deepcopy(current_board)
+                possible_move_node = Node((board_copy, index, board_copy.set_square_from_index(index, square_state)))
                 if possible_move_node.data[2] == TurnState.Victory:
                     if maximizing:
                         possible_move_node.data_score = 1.0
@@ -60,10 +61,9 @@ class Ai(Player):
                     possible_move_node.data_score = self.get_move_heuristic(possible_move_node.data[0], square_state,
                                                                             index, maximizing)
                 moves.append(possible_move_node)
+        moves.sort(key=lambda x: x.data_score, reverse=maximizing)
         if len(moves) > 0 and len(moves) > self.max_node_childs:
-            moves.sort(key=lambda x: x[1], reverse=maximizing)
             moves = moves[0:self.max_node_childs]
-        random.shuffle(moves)
         return moves
 
     def get_move_heuristic(self, board: TicTacToe, square_state, index, maximizing) -> float:
