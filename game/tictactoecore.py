@@ -5,6 +5,9 @@ class SquareState:
     def is_none(self):
         return self.symbol is None
 
+    def __eq__(self, other):
+        return self.symbol == other.symbol
+
 
 class TurnState:
     Continue = 0
@@ -36,7 +39,7 @@ class TicTacToe:
             s += " " * (line_margin - 1)
             return s
 
-        s = ""
+        s = "\n"
         lane = 1
         col_margin = len(str(self.y_size)) + 4
         if col_margin % 2 == 0:
@@ -83,7 +86,7 @@ class TicTacToe:
     def get_index_coord(self, index) -> (int, int):
         return index % self.x_size, int(index / self.x_size)
 
-    def set_square(self, x: int, y: int, state: SquareState) -> TurnState:
+    def set_square(self, x: int, y: int, state: SquareState):
         i = self.get_coord_index(x, y)
         if not self.squares[i].is_none():
             return TurnState.Error
@@ -91,7 +94,7 @@ class TicTacToe:
         self.filled += 1
         return self.check_game_over(x, y, state)
 
-    def set_square_from_index(self, index: int, square_state: SquareState) -> TurnState:
+    def set_square_from_index(self, index: int, square_state: SquareState):
         if not self.squares[index].is_none():
             return TurnState.Error
         self.squares[index] = square_state
@@ -99,91 +102,71 @@ class TicTacToe:
         coord = self.get_index_coord(index)
         return self.check_game_over(coord[0], coord[1], square_state)
 
-
-    def check_game_over(self, x: int, y: int, state: SquareState) -> TurnState:
+    def check_game_over(self, x: int, y: int, state: SquareState):
         if self.filled >= self.seq_to_win + 2 and \
-                ((self.check_x(x, y, state, True, False) >= self.seq_to_win) or \
-                (self.check_y(x, y, state, True, False) == self.seq_to_win) or \
-                (self.check_left_diag(x, y, state, True, False) == self.seq_to_win) or \
-                (self.check_right_diag(x, y, state, True, False) == self.seq_to_win)):
+                ((self.check_x(x, y, state, True, False) >= self.seq_to_win) or
+                 (self.check_y(x, y, state, True, False) == self.seq_to_win) or
+                 (self.check_left_diag(x, y, state, True, False) == self.seq_to_win) or
+                 (self.check_right_diag(x, y, state, True, False) == self.seq_to_win)):
             return TurnState.Victory
-            
+
         if self.check_draw():
             return TurnState.Draw
         return TurnState.Continue
 
-    def all_lines_checker(self, x: int, y: int, state: SquareState, stop_counting: bool, check_x_axis: bool, check_y_axis: bool, inverted = False) -> tuple[int, int]:
+    def check_x(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
         available_spaces_count = 1
         seq_count = 1
-        if check_x_axis == check_y_axis:
-            def loop_condition(dist: int, check: tuple[int, int]):
-                offset_x, offset_y = (dist, -dist) if inverted else (dist, dist)
-                check_x, check_y = check
-                result = \
-                    x + offset_x >= 0 and \
-                    y + offset_y >= 0 and \
-                    dist < self.seq_to_win
-
-                if result:
-                    check_y = y + offset_y
-                    check_x = x + offset_x
-                return result, (check_x, check_y)
-        else:
-            def loop_condition(dist: int, check: tuple[int, int]):
-                check_x, check_y = check
-                if check_x_axis:
-                    result = x + dist >= 0 and dist < self.seq_to_win
-                    if result:
-                        check_x = x + dist
-                    return result, (check_x, y)
-                else:
-                    result = y + dist >= 0 and dist < self.seq_to_win
-                    if result:
-                        check_y = x + dist
-                    return result, (x, check_y)
-                
         for i in [1, -1]:
             dist = i
-            checking_x = x
-            checking_y = y
-            while True:
-                result, (checking_x, checking_y) = loop_condition(dist, (checking_x, checking_y))
-                if not result:
-                    break
-                square_state = self.get_square(int(checking_x), int(checking_y))
-                if square_state is not None:
+            while 0 <= x + dist < self.x_size and dist < self.seq_to_win:
+                square_state = self.get_square(x + dist, y)
+                if not square_state.is_none():
                     if square_state == state:
                         seq_count += 1
-                    elif stop_counting or not square_state.is_none():
+                    else:
                         break
-                else:
+                elif stop_counting:
                     break
                 dist += i
                 available_spaces_count += 1
-        return seq_count, available_spaces_count
-
-    def check_for_victory(self, x: int, y: int, state: SquareState, x_axis: bool, y_axis: bool, stop_counting = False, return_available_spaces=False, inverted_axis = False) -> int:
-        result = self.all_lines_checker(x, y, state, stop_counting, x_axis, y_axis, inverted_axis)
         if return_available_spaces:
-            return result[1]
-        elif not stop_counting or result[0] >= self.seq_to_win:
-            return result[0]
+            return available_spaces_count
+        elif not stop_counting or seq_count >= self.seq_to_win:
+            return seq_count
         else:
             return 1
 
-
-    def check_x(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
-        return self.check_for_victory(x, y, state, stop_counting, return_available_spaces, True, False, False)
-
     def check_y(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
-        return self.check_for_victory(x, y, state, stop_counting, return_available_spaces, False, True, False)
+        available_spaces_count = 1
+        seq_count = 1
+        for i in [1, -1]:
+            dist = i
+            while 0 <= y + dist < self.y_size and dist < self.seq_to_win:
+                square_state = self.get_square(x, y + dist)
+                if not square_state.is_none():
+                    if square_state == state:
+                        seq_count += 1
+                    else:
+                        break
+                elif stop_counting:
+                    break
+                dist += i
+                available_spaces_count += 1
+        if return_available_spaces:
+            return available_spaces_count
+        elif not stop_counting or seq_count >= self.seq_to_win:
+            return seq_count
+        else:
+            return 1
 
-    def check_left_diag(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
-        return self.check_for_victory(x, y, state, stop_counting, return_available_spaces, True, True, False)
+    def check_left_diag(self, x: int, y: int, state: SquareState, stop_counting: bool,
+                        return_available_spaces: bool) -> int:
+        return 1
 
-    def check_right_diag(self, x: int, y: int, state: SquareState, stop_counting: bool, return_available_spaces: bool) -> int:
-        return self.check_for_victory(x, y, state, stop_counting, return_available_spaces, True, True, True)
-
+    def check_right_diag(self, x: int, y: int, state: SquareState, stop_counting: bool,
+                         return_available_spaces: bool) -> int:
+        return 1
 
     def check_draw(self):
         return self.filled == len(self.squares)
@@ -198,10 +181,10 @@ class TicTacToe:
         self.squares = [SquareState() for _ in range(self.x_size * self.y_size)]
         self.filled = 0
 
-    def sum_squares_in_winnable_distance(self, index: int, square_state: SquareState, return_highest = False) -> int:
+    def sum_squares_in_winnable_distance(self, index: int, square_state: SquareState, return_highest=False) -> int:
         x, y = self.get_index_coord(index)
         if return_highest:
-            count = [0,0,0,0]
+            count = [0, 0, 0, 0]
             count[0] = self.check_x(x, y, square_state, False, False) - 1
             count[1] = self.check_y(x, y, square_state, False, False) - 1
             count[2] = self.check_left_diag(x, y, square_state, False, False) - 1
@@ -213,10 +196,10 @@ class TicTacToe:
             return int(highest)
         else:
             return int((self.check_x(x, y, square_state, False, False) +
-                self.check_y(x, y, square_state, False, False) +
-                self.check_left_diag(x, y, square_state, False, False) +
-                self.check_right_diag(x, y, square_state, False, False)) - 4)
-    
+                        self.check_y(x, y, square_state, False, False) +
+                        self.check_left_diag(x, y, square_state, False, False) +
+                        self.check_right_diag(x, y, square_state, False, False)) - 4)
+
     def check_n_of_available_axis(self, index: int, square_state: SquareState) -> int:
         coord = self.get_index_coord(index)
         axis = 0
@@ -256,4 +239,3 @@ class TicTacToe:
             if square is not None and square_state == square:
                 count += 1
         return count
-

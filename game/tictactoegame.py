@@ -143,7 +143,6 @@ class TicTacToeGame:
                 else:
                     self.game_state.next_player = (self.player1, 1)
             print(self)
-        print("\nGame is finished!\n")
 
     @staticmethod
     def create_ai(player, op_symbol, difficulty):
