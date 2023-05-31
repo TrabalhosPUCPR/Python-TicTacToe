@@ -3,4 +3,4 @@ Rewrite of my Rust TicTacToe game in Python
 
 Original in rust can be found here: https://github.com/TrabalhosPUCPR/Rust-TicTacToe
 
-This version is still WIP
+An jupyter notebook version is available
